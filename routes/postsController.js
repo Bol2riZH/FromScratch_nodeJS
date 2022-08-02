@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const objectId = require('mongoose').Types.ObjectId;
 
 const { PostsModel } = require('../models/postsModel');
 
-// get post
+// get
 router.get('/', (req, res) => {
   PostsModel.find((err, docs) => {
     if (!err) res.send(docs);
@@ -12,7 +13,7 @@ router.get('/', (req, res) => {
   });
 });
 
-// send post
+// send
 router.post('/', (req, res) => {
   const newRecord = new PostsModel({
     author: req.body.author,
@@ -25,7 +26,35 @@ router.post('/', (req, res) => {
   });
 });
 
+// update
+router.put('/:id', (req, res) => {
+  if (!objectId.isValid(req.params.id))
+    return res.status(400).send('ID unknow:' + req.params.id);
 
+  const updateRecord = {
+    author: req.body.author,
+    message: req.body.message,
+  };
+  PostsModel.findByIdAndUpdate(
+    req.params.id,
+    { $set: updateRecord },
+    { new: true },
+    (err, docs) => {
+      if (!err) res.send(docs);
+      else console.log('Update error:' + err);
+    }
+  );
+});
+
+// delete
+router.delete('/:id', (req, res) => {
+  if (!objectId.isValid(req.params.id))
+    return res.status(400).send('ID unknow:' + req.params.id);
+
+  PostsModel.findByIdAndRemove(req.params.id, (err, docs) => {
+    if (!err) res.send(docs);
+    else console.log('Deleted error:' + err);
+  });
+});
 
 module.exports = router;
- 
